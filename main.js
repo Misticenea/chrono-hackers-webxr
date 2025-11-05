@@ -105,7 +105,7 @@ async function createScene() {
     console.log('WebXR AR supportato:', xrArSupported);
     
     // Configura sempre la modalità desktop come base
-    setupDesktopExperience(scene);
+    await setupDesktopExperience(scene);
     
     // Se WebXR è supportato, aggiungi il pulsante per entrare in VR
     if (xrSupported || xrArSupported) {
@@ -211,7 +211,7 @@ function setupXRController(controller, motionController) {
 // SETUP ESPERIENZA DESKTOP
 // ============================================
 
-function setupDesktopExperience(scene) {
+async function setupDesktopExperience(scene) {
     console.log('Configurazione esperienza desktop...');
     
     // Crea una camera universale
@@ -236,8 +236,17 @@ function setupDesktopExperience(scene) {
     );
     light.intensity = 0.7;
     
-    // Crea un ambiente base (skybox semplice)
-    createDesktopEnvironment(scene);
+    // Aggiungi una luce direzionale per le ombre
+    const dirLight = new BABYLON.DirectionalLight(
+        'dirLight',
+        new BABYLON.Vector3(-1, -2, -1),
+        scene
+    );
+    dirLight.position = new BABYLON.Vector3(5, 10, 5);
+    dirLight.intensity = 0.5;
+    
+    // Crea l'ambiente con modello 3D e skybox
+    await createDesktopEnvironment(scene);
     
     // Mouse click per interagire
     scene.onPointerDown = (evt, pickResult) => {
@@ -252,8 +261,70 @@ function setupDesktopExperience(scene) {
     };
 }
 
-function createDesktopEnvironment(scene) {
-    // Crea un pavimento
+async function createDesktopEnvironment(scene) {
+    // Crea la skybox corrotta
+    const skybox = BABYLON.MeshBuilder.CreateBox('skybox', { size: 1000 }, scene);
+    const skyboxMaterial = new BABYLON.StandardMaterial('skyboxMat', scene);
+    skyboxMaterial.backFaceCulling = false;
+    skyboxMaterial.disableLighting = true;
+    
+    // Carica la texture della skybox glitch
+    const skyboxTexture = new BABYLON.Texture('skybox_glitch.jpg', scene);
+    skyboxMaterial.emissiveTexture = skyboxTexture;
+    skyboxMaterial.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+    skybox.material = skyboxMaterial;
+    skybox.infiniteDistance = true;
+    
+    // Aggiungi un effetto di animazione alla skybox
+    let skyboxTime = 0;
+    scene.onBeforeRenderObservable.add(() => {
+        skyboxTime += 0.001;
+        if (skyboxTexture) {
+            skyboxTexture.uOffset = Math.sin(skyboxTime) * 0.02;
+            skyboxTexture.vOffset = Math.cos(skyboxTime * 0.7) * 0.02;
+        }
+    });
+    
+    // Carica il modello 3D dell'appartamento
+    try {
+        const result = await BABYLON.SceneLoader.ImportMeshAsync(
+            '',
+            '',
+            'apartment_floor_plan.glb',
+            scene
+        );
+        
+        console.log('Modello appartamento caricato:', result.meshes.length, 'mesh');
+        
+        // Scala e posiziona il modello
+        if (result.meshes.length > 0) {
+            const rootMesh = result.meshes[0];
+            rootMesh.scaling = new BABYLON.Vector3(2, 2, 2);
+            rootMesh.position = new BABYLON.Vector3(0, 0, 0);
+            
+            // Applica un materiale con effetto glitch ai mesh
+            result.meshes.forEach((mesh, index) => {
+                if (mesh.material && index > 0) {
+                    const originalMat = mesh.material;
+                    if (originalMat instanceof BABYLON.PBRMaterial || originalMat instanceof BABYLON.StandardMaterial) {
+                        // Aggiungi un leggero effetto emissivo verde
+                        if (originalMat.emissiveColor) {
+                            originalMat.emissiveColor = new BABYLON.Color3(0, 0.1, 0);
+                        }
+                    }
+                }
+            });
+        }
+        
+    } catch (error) {
+        console.warn('Impossibile caricare il modello 3D:', error);
+        // Fallback: crea un ambiente semplice
+        createSimpleEnvironment(scene);
+    }
+}
+
+function createSimpleEnvironment(scene) {
+    // Ambiente di fallback se il modello non si carica
     const ground = BABYLON.MeshBuilder.CreateGround(
         'ground',
         { width: 20, height: 20 },
@@ -265,7 +336,6 @@ function createDesktopEnvironment(scene) {
     groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
     ground.material = groundMat;
     
-    // Crea un muro dietro il varco
     const wall = BABYLON.MeshBuilder.CreateBox(
         'wall',
         { width: 10, height: 5, depth: 0.2 },
