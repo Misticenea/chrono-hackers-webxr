@@ -1,0 +1,321 @@
+/* ============================================
+   SETTINGS MENU - Chrono-Hackers
+   ============================================ */
+
+#settingsButton {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 255, 0, 0.2);
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    padding: 10px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 200;
+    transition: all 0.3s;
+    text-shadow: 0 0 5px #00ff00;
+}
+
+#settingsButton:hover {
+    background: rgba(0, 255, 0, 0.4);
+    box-shadow: 0 0 15px #00ff00;
+    transform: scale(1.05);
+}
+
+#settingsMenu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 3px solid #00ff00;
+    padding: 30px;
+    z-index: 300;
+    min-width: 500px;
+    max-width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+    font-family: 'Courier New', monospace;
+}
+
+#settingsMenu.hidden {
+    display: none;
+}
+
+#settingsMenu h2 {
+    color: #00ff00;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2rem;
+    text-shadow: 2px 2px 0px #ff00ff, -2px -2px 0px #00ffff;
+    animation: glitchTitle 2s infinite;
+}
+
+.settings-section {
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid #00ff00;
+    background: rgba(0, 255, 0, 0.05);
+}
+
+.settings-section h3 {
+    color: #00ffff;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    text-transform: uppercase;
+}
+
+.preset-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.preset-btn {
+    background: rgba(0, 255, 0, 0.1);
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    padding: 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.preset-btn:hover {
+    background: rgba(0, 255, 0, 0.3);
+    box-shadow: 0 0 10px #00ff00;
+}
+
+.preset-btn.active {
+    background: rgba(0, 255, 0, 0.5);
+    box-shadow: 0 0 20px #00ff00;
+    border-color: #00ffff;
+    color: #00ffff;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.setting-row label {
+    color: #00ff00;
+    font-size: 1rem;
+    flex: 1;
+}
+
+.setting-row select,
+.setting-row input[type="range"] {
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 5px 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    min-width: 150px;
+}
+
+.setting-row input[type="range"] {
+    -webkit-appearance: none;
+    height: 8px;
+    background: rgba(0, 255, 0, 0.2);
+    outline: none;
+}
+
+.setting-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #00ff00;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+.setting-row input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #00ff00;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00ff00;
+    border: none;
+}
+
+.setting-row .value-display {
+    color: #00ffff;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: right;
+    margin-left: 10px;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 0, 0, 0.3);
+    border: 2px solid #ff0000;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ff0000;
+    transition: .4s;
+    box-shadow: 0 0 5px #ff0000;
+}
+
+input:checked + .slider {
+    background-color: rgba(0, 255, 0, 0.3);
+    border-color: #00ff00;
+}
+
+input:checked + .slider:before {
+    transform: translateX(30px);
+    background-color: #00ff00;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+.slider.round {
+    border-radius: 30px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.settings-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    justify-content: center;
+}
+
+.settings-actions button {
+    background: rgba(0, 255, 0, 0.2);
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    padding: 12px 30px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.settings-actions button:hover {
+    background: rgba(0, 255, 0, 0.4);
+    box-shadow: 0 0 15px #00ff00;
+}
+
+.settings-actions button.cancel {
+    border-color: #ff0000;
+    color: #ff0000;
+    background: rgba(255, 0, 0, 0.2);
+}
+
+.settings-actions button.cancel:hover {
+    background: rgba(255, 0, 0, 0.4);
+    box-shadow: 0 0 15px #ff0000;
+}
+
+.performance-info {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    font-size: 0.9rem;
+}
+
+.performance-info strong {
+    color: #00ff00;
+}
+
+/* Scrollbar personalizzata */
+#settingsMenu::-webkit-scrollbar {
+    width: 10px;
+}
+
+#settingsMenu::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+#settingsMenu::-webkit-scrollbar-thumb {
+    background: #00ff00;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+#settingsMenu::-webkit-scrollbar-thumb:hover {
+    background: #00ffff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #settingsMenu {
+        min-width: 90%;
+        padding: 20px;
+    }
+    
+    .preset-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    #settingsMenu h2 {
+        font-size: 1.5rem;
+    }
+    
+    .setting-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .setting-row select,
+    .setting-row input[type="range"] {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+@keyframes glitchTitle {
+    0%, 90%, 100% { transform: translate(0); }
+    92% { transform: translate(-2px, 2px); }
+    94% { transform: translate(2px, -2px); }
+    96% { transform: translate(-2px, -2px); }
+    98% { transform: translate(2px, 2px); }
+}
