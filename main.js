@@ -97,25 +97,50 @@ async function createScene() {
         setupPostProcessing(scene, settings);
     }
     
-    // Tenta di inizializzare WebXR
-    try {
-        xrHelper = await scene.createDefaultXRExperienceAsync({
-            uiOptions: {
-                sessionMode: 'immersive-ar'
-            },
-            optionalFeatures: true
-        });
-        
-        isXRSupported = true;
-        await setupXRExperience(scene, xrHelper);
-        updateInstructions('xr');
-        
-    } catch (error) {
-        console.log('WebXR non disponibile, modalità desktop attivata');
-        isXRSupported = false;
-        setupDesktopExperience(scene);
-        updateInstructions('desktop');
+    // Verifica se WebXR è davvero supportato e disponibile
+    const xrSupported = await BABYLON.WebXRSessionManager.IsSessionSupportedAsync('immersive-vr');
+    const xrArSupported = await BABYLON.WebXRSessionManager.IsSessionSupportedAsync('immersive-ar');
+    
+    console.log('WebXR VR supportato:', xrSupported);
+    console.log('WebXR AR supportato:', xrArSupported);
+    
+    // Configura sempre la modalità desktop come base
+    setupDesktopExperience(scene);
+    
+    // Se WebXR è supportato, aggiungi il pulsante per entrare in VR
+    if (xrSupported || xrArSupported) {
+        try {
+            const sessionMode = xrArSupported ? 'immersive-ar' : 'immersive-vr';
+            xrHelper = await scene.createDefaultXRExperienceAsync({
+                uiOptions: {
+                    sessionMode: sessionMode
+                },
+                optionalFeatures: true
+            });
+            
+            // Aggiorna l'interfaccia solo quando l'utente entra effettivamente in VR
+            xrHelper.baseExperience.onStateChangedObservable.add((state) => {
+                if (state === BABYLON.WebXRState.IN_XR) {
+                    isXRSupported = true;
+                    updateInstructions('xr');
+                    console.log('Entrato in modalità XR');
+                } else if (state === BABYLON.WebXRState.NOT_IN_XR) {
+                    isXRSupported = false;
+                    updateInstructions(currentGamepad ? 'gamepad' : 'desktop');
+                    console.log('Uscito da modalità XR');
+                }
+            });
+            
+            await setupXRExperience(scene, xrHelper);
+            
+        } catch (error) {
+            console.log('Errore inizializzazione WebXR:', error);
+        }
     }
+    
+    // Inizialmente mostra le istruzioni desktop
+    updateInstructions('desktop');
+    isXRSupported = false;
     
     // Crea gli elementi di gioco
     createGameElements(scene);
@@ -485,8 +510,10 @@ function resetAnomalia() {
 
 function updateInstructions(mode) {
     const controlsList = document.getElementById('controlsList');
+    const instructionsBox = document.getElementById('instructions');
     
     let instructions = '';
+    let platformInfo = '';
     
     switch(mode) {
         case 'xr':
@@ -494,8 +521,8 @@ function updateInstructions(mode) {
                 <li>Usa le MANI per afferrare</li>
                 <li>Pizzica per prendere l'anomalia</li>
                 <li>Riportala al VARCO VHS</li>
-                <li>Modalità: REALTÀ MISTA</li>
             `;
+            platformInfo = '<strong style="color: #00ffff;">REALTÀ MISTA ATTIVA</strong>';
             break;
             
         case 'gamepad':
@@ -504,8 +531,8 @@ function updateInstructions(mode) {
                 <li>Stick DX: Rotazione camera</li>
                 <li>Pulsante A / RT: Afferra</li>
                 <li>Pulsante B: Rilascia</li>
-                <li>Modalità: GAMEPAD XBOX</li>
             `;
+            platformInfo = '<strong style="color: #00ff00;">CONTROLLER RILEVATO</strong>';
             break;
             
         case 'desktop':
@@ -513,12 +540,12 @@ function updateInstructions(mode) {
                 <li>WASD: Movimento</li>
                 <li>Mouse: Rotazione camera</li>
                 <li>Click SX: Afferra/Rilascia</li>
-                <li>Modalità: DESKTOP</li>
             `;
+            platformInfo = '<strong style="color: #00ff00;">MODALITÀ DESKTOP</strong>';
             break;
     }
     
-    controlsList.innerHTML = instructions;
+    controlsList.innerHTML = instructions + '<li style="margin-top: 10px; border-top: 1px solid #00ff00; padding-top: 10px;">' + platformInfo + '</li>';
 }
 
 // ============================================
